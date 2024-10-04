@@ -1,0 +1,55 @@
+{
+    "manifest_version": 3,
+    "name": "EyeGazer",
+    "version": "1.0",
+    "description": "EyeGazer allows users to surf the internet and control websites using eye movements.",
+    "icons": {
+      "16": "icon.png",
+      "48": "icon.png",
+      "128": "icon.png"
+    },
+    "permissions": [
+      "storage",           
+      "activeTab",        
+      "webNavigation",     
+      "scripting",         
+      "tabs"               
+    ],
+    "background": {
+      "service_worker": "background.js"  
+    },
+    "content_scripts": [
+      {
+        "matches": ["<all_urls>"],       
+        "js": ["contentScript.js"],      
+        "css": ["eyegazerStyles.css"]   
+      }
+    ],
+    "action": {
+      "default_popup": "index.html",     
+      "default_icon": {
+        "16": "icon.png",
+        "48": "icon.png",
+        "128": "icon.png"
+      }
+    },
+    "options_page": "options.html",      
+    "host_permissions": [
+      "*://*/*" 
+    ],
+    "commands": {
+      "toggle-eye-control": {
+        "suggested_key": {
+          "default": "Ctrl+Shift+E",
+          "mac": "Command+Shift+E"
+        },
+        "description": "Enable or disable eye control"
+      }
+    },
+    "web_accessible_resources": [
+      {
+        "matches": ["*://*/*"]
+      }
+    ]
+  }
+  
