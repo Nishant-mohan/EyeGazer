@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EyeGazer Calibration</title>
+    <style>
+        .calibration-point {
+            width: 20px;
+            height: 20px;
+            background-color: red;
+            position: absolute;
+            border-radius: 50%;
+        }
+        #calibration-instructions {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div id="calibration-instructions">Click on the red dots to recalibrate.</div>
+    <div id="calibration-container"></div>
+
+    <script src="webgazer.js" type="text/javascript"></script>
+    <script>
+        //Turn off the video 
+        webgazer.showVideo(false);
+
+        // Function to start calibration process
+        function startCalibration() {
+            const calibrationPoints = [
+                { x: 50, y: 50 },
+                { x: window.innerWidth - 50, y: 50 },
+                { x: 50, y: window.innerHeight - 50 },
+                { x: window.innerWidth - 50, y: window.innerHeight - 50 },
+                { x: window.innerWidth / 2, y: window.innerHeight / 2 }
+            ];
+            
+            const calibrationContainer = document.getElementById('calibration-container');
+            calibrationContainer.innerHTML = ''; // Clear previous points
+
+            // Create calibration points for each coordinate
+            calibrationPoints.forEach((point) => {
+                const calibrationPoint = document.createElement('div');
+                calibrationPoint.className = 'calibration-point';
+                calibrationPoint.style.left = `${point.x}px`;
+                calibrationPoint.style.top = `${point.y}px`;
+
+                // When user clicks a point, WebGazer records calibration data
+                calibrationPoint.addEventListener('click', () => {
+                    webgazer.recordScreenPosition(point.x, point.y);
+                    calibrationPoint.style.backgroundColor = 'green'; // Mark as calibrated
+                });
+
+                calibrationContainer.appendChild(calibrationPoint);
+            });
+        }
+
+        // Initialize WebGazer
+        webgazer.setGazeListener(function(data, elapsedTime) {
+            if (data == null) return;
+            var x = data.x;
+            var y = data.y;
+            console.log("Gaze detected at: ", x, y);
+        }).begin();
+
+        // Clear previous calibration data and restart calibration process
+        function recalibrate() {
+            webgazer.clearData(); // Clears any existing calibration data
+            startCalibration();   // Begin calibration again
+        }
+
+        // Recalibrate when the user presses a button or key
+        document.body.addEventListener('keydown', function (e) {
+            if (e.key === 'r') { // Press 'R' to recalibrate
+                recalibrate();
+            }
+        });
+
+        // Start initial calibration
+        recalibrate();
+    </script>
+</body>
+</html>
