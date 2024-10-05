@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eye Click Feature with Calibration</title>
+    <style>
+        /* Sample buttons for gaze click testing */
+        .clickable {
+            width: 100px;
+            height: 50px;
+            background-color: lightblue;
+            margin: 50px;
+            display: inline-block;
+            text-align: center;
+            line-height: 50px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        /* Add a visible indicator to show active gaze */
+        .gaze-hover {
+            background-color: yellow !important;
+        }
+
+        /* Calibration circle */
+        .calibration-point {
+            width: 20px;
+            height: 20px;
+            background-color: lightcoral;
+            border-radius: 50%;
+            position: absolute;
+            z-index: 10;
+            cursor: pointer;
+            opacity: 0.6;
+        }
+
+        /* Calibration instructions */
+        #calibration-instructions {
+            text-align: center;
+            font-size: 18px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="btn1" class="clickable">Button 1</div>
+    <div id="btn2" class="clickable">Button 2</div>
+    
+    <!-- Calibration Instructions -->
+    <div id="calibration-instructions">Click each red dot 5 times to calibrate. Each click makes the dot darker.</div>
+    <div id="calibration-container"></div>
+
+    <script src="webgazer.js" type="text/javascript"></script>
+    <script src="Lib/recalibration.js" type="module"></script>
+
+    <script type="module">
+        import { recalibrate } from "./Lib/recalibration.js";
+
+        // Global variables
+        let gazeTimer = null;
+        let currentlyHoveredElement = null;
+        const gazeTimeThreshold = 100; // Time in milliseconds to trigger a click
+
+        // Turn off video feed from WebGazer
+        webgazer.showVideo(false);
+
+        // Start Gaze Click after calibration
+        function startGazeClick() {
+            document.getElementById('calibration-instructions').textContent = 'Calibration complete! Gaze tracking is now active.';
+            console.log("its starts")
+            webgazer.setGazeListener(function(data, elapsedTime) {
+                if (data == null) return;
+
+                const xprediction = data.x;
+                const yprediction = data.y;
+
+                const element = document.elementFromPoint(xprediction, yprediction);
+
+                if (element && element.classList.contains('clickable')) {
+                    if (currentlyHoveredElement !== element) {
+                        resetGaze();
+                        currentlyHoveredElement = element;
+                        element.classList.add('gaze-hover');
+                        gazeTimer = setTimeout(() => {
+                            triggerClick(element);
+                        }, gazeTimeThreshold);
+                    }
+                } else {
+                    resetGaze();
+                }
+            }).begin();
+        }
+
+        // Function to trigger click
+        function triggerClick(element) {
+            console.log(`Simulated click on: ${element.id}`);
+            element.click();
+            resetGaze();
+        }
+
+        // Reset gaze
+        function resetGaze() {
+            if (gazeTimer) clearTimeout(gazeTimer);
+            if (currentlyHoveredElement) currentlyHoveredElement.classList.remove('gaze-hover');
+            currentlyHoveredElement = null;
+        }
+
+        // Sample click handlers for buttons
+        document.getElementById('btn1').addEventListener('click', () => {
+            alert('Button 1 clicked!');
+        });
+        document.getElementById('btn2').addEventListener('click', () => {
+            alert('Button 2 clicked!');
+        });
+
+        // Recalibrate on key press
+        document.body.addEventListener('keydown', function(e) {
+            if (e.key === 'r') { // Press 'R' to recalibrate
+                recalibrate();
+            }
+        });
+
+        // Start the calibration process and then gaze tracking
+        recalibrate().then(startGazeClick); // Start gaze click after calibration
+    </script>
+</body>
+</html>
