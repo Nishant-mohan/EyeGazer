@@ -56,55 +56,14 @@
 
     <script type="module">
         import { recalibrate } from "./Lib/recalibration.js";
-
+        import {startGazeClick} from "./Lib/clickFunction.js";
         // Global variables
-        let gazeTimer = null;
-        let currentlyHoveredElement = null;
-        const gazeTimeThreshold = 100; // Time in milliseconds to trigger a click
 
         // Turn off video feed from WebGazer
         webgazer.showVideo(false);
 
         // Start Gaze Click after calibration
-        function startGazeClick() {
-            document.getElementById('calibration-instructions').textContent = 'Calibration complete! Gaze tracking is now active.';
-            console.log("its starts")
-            webgazer.setGazeListener(function(data, elapsedTime) {
-                if (data == null) return;
-
-                const xprediction = data.x;
-                const yprediction = data.y;
-
-                const element = document.elementFromPoint(xprediction, yprediction);
-
-                if (element && element.classList.contains('clickable')) {
-                    if (currentlyHoveredElement !== element) {
-                        resetGaze();
-                        currentlyHoveredElement = element;
-                        element.classList.add('gaze-hover');
-                        gazeTimer = setTimeout(() => {
-                            triggerClick(element);
-                        }, gazeTimeThreshold);
-                    }
-                } else {
-                    resetGaze();
-                }
-            }).begin();
-        }
-
-        // Function to trigger click
-        function triggerClick(element) {
-            console.log(`Simulated click on: ${element.id}`);
-            element.click();
-            resetGaze();
-        }
-
-        // Reset gaze
-        function resetGaze() {
-            if (gazeTimer) clearTimeout(gazeTimer);
-            if (currentlyHoveredElement) currentlyHoveredElement.classList.remove('gaze-hover');
-            currentlyHoveredElement = null;
-        }
+        
 
         // Sample click handlers for buttons
         document.getElementById('btn1').addEventListener('click', () => {
